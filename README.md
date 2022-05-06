@@ -1,4 +1,4 @@
-# DIrectus-POC_Symfony
+# Directus-POC_Symfony
 
 POC en Symfony de l'intégration des données provenant de l'API de Directus.
 

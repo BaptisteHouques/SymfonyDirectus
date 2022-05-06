@@ -1,0 +1,59 @@
+{% extends "base.html.twig" %}
+{% block body %}
+    {#
+    <div id="banner" style="height: 160px;overflow: hidden">
+            {% autoescape %}
+                {{ banniere.Contenu|raw }}
+            {% endautoescape %}
+    </div>
+    #}
+    <div class="container">
+        <h2>Bloc Informations</h2>
+        <div class="row justify-content-center pt-4">
+            {% for bloc in bloc_informations %}
+                {% if bloc.Erreur_Bloc %}
+                <div id="bloc-{{ bloc.id }}" class="card me-4 mb-4" style="width: 15rem">
+                {% if bloc.ImageArrierePlan is not null %}
+                    <img class="card-img-top mt-2" src="{{ directus_api }}/assets/{{ bloc.ImageArrierePlan }}" height="200" alt="Card image cap">
+                {% else %}
+                    <img class="card-img-top mt-2" src="https://www.projetcartylion.fr/app/uploads/2020/08/Placeholder.png" height="200" alt="Card image cap">
+                {% endif %}
+                    <div class="card-body text-center d-flex flex-column">
+                        <h5 class="card-title">{{ bloc.Titre }}</h5>
+                        <p class="text-danger text-uppercase fw-bold pt-2">{{ bloc.Erreur_Bloc.CodeJSON_Erreur.Type }}</p>
+                        <p class="text-danger text-uppercase">{{ bloc.Erreur_Bloc.CodeJSON_Erreur.Description }}</p>
+{#                        <button class="btn btn-outline-success mt-auto" onclick="{{ path('removeBlocError', { 'idBloc': bloc.id }) }}">Rendre Accessible</button>#}
+                        <button class="btn btn-outline-success mt-auto" onclick="test({{ bloc.id }})">Rendre Accessible</button>
+{#                        <a class="btn btn-outline-success mt-auto" href="{{ path('removeBlocError')}}">test</a>#}
+                    </div>
+                </div>
+                {% else %}
+                    <div id="bloc-{{ bloc.id }}" class="mr-2 card me-4 mb-4" style="width: 15rem;">
+                        {% if bloc.ImageArrierePlan is not null %}
+                            <a href="{{ bloc.Lien }}"><img class="card-img-top mt-2" src="{{ directus_api }}/assets/{{ bloc.ImageArrierePlan }}" height="200" alt="Card image cap"></a>
+                        {% else %}
+                            <a href="{{ bloc.Lien }}"><img class="card-img-top mt-2" src="https://www.projetcartylion.fr/app/uploads/2020/08/Placeholder.png" height="200" alt="Card image cap"></a>
+                        {% endif %}
+                        <div class="card-body text-center d-flex flex-column">
+                            <h5 class="card-title">{{ bloc.Titre }}</h5>
+                            <p class="card-text pt-2">{{ bloc.Description }}</p>
+                            <button class="btn btn-outline-danger mt-auto">Rendre Inaccessible</button>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+{% block javascripts %}
+    <script>
+        function test(id){
+            let url = '{{ path('removeBlocError', { 'idBloc': 'fakeId'}) }}'
+            //url = url.replace('fakeId', id);
+            fetch('http://127.0.0.1:8000/removeBlocError/1')
+                .then((response) => {
+                    console.log(response)
+                })
+        }
+    </script>
+{% endblock %}

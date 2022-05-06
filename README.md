@@ -1,6 +1,6 @@
-# CMS_Headless-POC_Symfony
+# DIrectus-POC_Symfony
 
-POC en Symfony de l'intégration des données venant des APIs des CMS Headless étudiés.
+POC en Symfony de l'intégration des données provenant de l'API de Directus.
 
 ## Getting started
 

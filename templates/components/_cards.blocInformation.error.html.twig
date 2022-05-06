@@ -1,0 +1,18 @@
+<div id="bloc-{{ id }}" class="card me-4 mb-4" style="width: 15rem">
+    <img class="card-img-top mt-2" src="{{ image }}" height="200" alt="Card image cap">
+    <div class="card-body text-center d-flex flex-column">
+        <h5 class="card-title">{{ titre }}</h5>
+        <p class="type-error text-danger text-uppercase fw-bold pt-2">{{ errorType }}</p>
+        <p class="description-error text-danger text-uppercase">{{ errorDesc }}</p>
+        <button class="btn btn-outline-success mt-auto" onclick="removeError({{ id }})">Rendre Accessible</button>
+    </div>
+</div>
+
+{#
+    Variables to be filled in:
+    id,
+    titre,
+    image,
+    errorType,
+    errorDesc
+#}

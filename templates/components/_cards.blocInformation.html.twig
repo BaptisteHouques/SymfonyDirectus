@@ -1,0 +1,17 @@
+<div id="bloc-{{ id }}" class="mr-2 card me-4 mb-4" style="width: 15rem;">
+        <a href="{{ lien }}"><img class="card-img-top mt-2" src="{{ image }}" height="200" alt="Card image cap"></a>
+    <div class="card-body text-center d-flex flex-column">
+        <h5 class="card-title">{{ titre }}</h5>
+        <p class="description card-text pt-2">{{ desc }}</p>
+        <button class="btn btn-outline-danger mt-auto">Rendre Inaccessible</button>
+    </div>
+</div>
+
+{#
+    Variables to be filled in:
+    id,
+    titre,
+    desc,
+    image,
+    lien
+#}

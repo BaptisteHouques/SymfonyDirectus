@@ -56,19 +56,19 @@ class BlocController extends AbstractController
      * @Route("/removeBlocError/{idBloc}", name="removeBlocError")
      * @param DirectusRestApi $directusRestApi
      * @param $idBloc
-     * @return false|string
+     * @return string|JsonResponse
      */
     public function removeBlocError (DirectusRestApi $directusRestApi, $idBloc) {
-        return json_encode(['erreur' => 'erreur']);
-        /*
+        //return new JsonResponse(['test' => 'test']);
+
         $url = $_ENV['DIRECTUS_API'] . '/items/bloc_information/' . $idBloc;
-        $body = array("Erreur_Bloc" => null);
+        $body = ["Erreur_Bloc" => null];
 
         $response = $directusRestApi->removeRelation($url, $body);
         if ($response)
-            return $response;
+            return new JsonResponse($response);
         else
-            return new JsonResponse("");
-        */
+            return new JsonResponse("erreur");
+
     }
 }

@@ -36,7 +36,7 @@ class DirectusRestApi
         return false;
     }
 
-    public function removeRelation (string $url, string $body = null, array $headers = null) {
+    public function removeRelation (string $url, $body = null, array $headers = null) {
         if ($headers == null)
             $headers = array();
         $body = json_encode($body);
@@ -46,7 +46,9 @@ class DirectusRestApi
                 'headers' => $headers,
                 'body' => $body
             ]);
-            return $httpresponse->getContent();
+            $res = $httpresponse->getContent();
+            $res = json_decode($res);
+            return $res->data;
         } catch (ClientExceptionInterface | RedirectionExceptionInterface | ServerExceptionInterface | TransportExceptionInterface $e) {
             $this->logger->critical('Impossible d\'appeler l\'API ' . $url . " : " . $e);
         }

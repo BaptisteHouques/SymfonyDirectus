@@ -3,72 +3,115 @@
 namespace App\Controller;
 
 use App\Service\DirectusRestApi;
-use http\Client\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 class BlocController extends AbstractController
 {
+    private DirectusRestApi $directusRestApi;
+
+    public function __construct(DirectusRestApi $directusRestApi) {
+        $this->directusRestApi = $directusRestApi;
+    }
+
     /**
      * @Route("/blocInformation", name="blocInformation")
-     * @param DirectusRestApi $directusRestApi
      * @return Response
      */
-    public function index(DirectusRestApi $directusRestApi): Response
+    public function index(): Response
     {
-        //REST
-        $directusGetBloc = $_ENV['DIRECTUS_API'] . '/items/bloc_information?fields=*,Erreur_Bloc.*';
-        $directusGetBanniere = $_ENV['DIRECTUS_API'] . '/items/banniere';
+        $urlGetBloc = $_ENV['DIRECTUS_API'] . '/items/bloc_information?fields=*,Erreur_Bloc.*';
+        $urlGetBanniere = $_ENV['DIRECTUS_API'] . '/items/banniere';
 
-        //GRAPHQL
-        $directusGetBlocGraphQL = $_ENV['DIRECTUS_API'] . '/graphql';
-        $directusGetBlocGraphQLQuery = "query {
-            bloc_information {
-                Titre
-                Description
-                Lien
-                ImageArrierePlan {
-                    id
-                }
-                Erreur_Bloc {
-                    CodeJSON_Erreur
-                }
-            }
-        }";
+        $bloc_informations = $this->directusRestApi->callDirectusApi($urlGetBloc);
+        $banniere = $this->directusRestApi->callDirectusApi($urlGetBanniere);
 
-        //REST CALL
-        $bloc_informations = $directusRestApi->getDirectusApi($directusGetBloc);
-        $banniere = $directusRestApi->getDirectusApi($directusGetBanniere);
-
-        //GRAPHQL CALL
-        //$bloc_informations = $directusRestApi->directusGraphQL($directusGetBlocGraphQL, $directusGetBlocGraphQLQuery);
-
-        dump($bloc_informations);
         if($bloc_informations && $banniere)
-            return $this->render('blocInformationView.html.twig', ['bloc_informations' => $bloc_informations, 'banniere' => $banniere,'directus_api' => $_ENV['DIRECTUS_API']]);
+            return $this->render('blocInformationView.html.twig', ['bloc_informations' => json_decode($bloc_informations)->data, 'banniere' => $banniere,'directus_api' => $_ENV['DIRECTUS_API']]);
         else
             return new Response("Erreur dans la réponse", Response::HTTP_NOT_FOUND);
     }
 
     /**
-     * @Route("/removeBlocError/{idBloc}", name="removeBlocError")
-     * @param DirectusRestApi $directusRestApi
+     * @Route("/apiUpdateBlocError/{idBloc}/{errorBloc}", name="apiUpdateBlocError")
+     * @param Request $request
      * @param $idBloc
-     * @return string|JsonResponse
+     * @param $errorBloc
+     * @return string
      */
-    public function removeBlocError (DirectusRestApi $directusRestApi, $idBloc) {
-        //return new JsonResponse(['test' => 'test']);
-
+    public function apiUpdateBlocError (Request $request, $idBloc, $errorBloc)
+    {
         $url = $_ENV['DIRECTUS_API'] . '/items/bloc_information/' . $idBloc;
-        $body = ["Erreur_Bloc" => null];
+        $token = 't';
+        $body = json_encode(["Erreur_Bloc" => $errorBloc]);
+        $headers = ["Authorization" => "Bearer $token", "Content-Type" => "application/json"];
 
-        $response = $directusRestApi->removeRelation($url, $body);
+        $response = $this->directusRestApi->callDirectusApi($url, 'PATCH', $body, $headers);
+
         if ($response)
-            return new JsonResponse($response);
+            return $response;
         else
-            return new JsonResponse("erreur");
+            return new Response("Erreur dans la réponse", Response::HTTP_NOT_FOUND);
+    }
 
+    /**
+     * @Route("/apiGetErreurService", name="apiGetErreurService")
+     * @return false|string
+     */
+    public function apiGetErreurService ()
+    {
+        $url = $_ENV['DIRECTUS_API'] . '/items/erreur_service/';
+        $response = $this->directusRestApi->callDirectusApi($url);
+        if ($response)
+            return $response;
+        else
+            return false;
+    }
+
+    /**
+     * @Route("/updateBlocError{idBloc}", name="updateBlocError")
+     * @param $idBloc
+     * @return Response
+     */
+    public function updateBlocError ($idBloc): Response
+    {
+        $errorBloc = null;
+        if (isset($_POST['valueSelected']))
+            $errorBloc = $_POST['valueSelected'];
+
+        $bloc = $this->apiUpdateBlocError(new Request(), $idBloc, $errorBloc);
+        if ($bloc) {
+            $bloc = json_decode($bloc)->data;
+            ($bloc->ImageArrierePlan != null) ? $image = $_ENV['DIRECTUS_API'] . '/assets/' . $bloc->ImageArrierePlan : $image = 'https://www.projetcartylion.fr/app/uploads/2020/08/Placeholder.png';
+
+            if ($errorBloc) {
+                return $this->render('components/_cards.blocInformation.error.html.twig', ['id' => $bloc->id, 'titre' => $bloc->Titre, 'image' => $image, 'errorType' => 'tempType', 'errorDesc' => 'tempDesc']);
+            }
+            else {
+                return $this->render('components/_cards.blocInformation.html.twig', ['id' => $bloc->id, 'titre' => $bloc->Titre, 'desc' => $bloc->Description, 'lien' => $bloc->Lien, 'image' => $image]);
+            }
+        }
+        else
+            return new Response("Erreur dans la réponse", Response::HTTP_NOT_FOUND);
+    }
+
+    /**
+     * @Route("/showListError/{idBloc}/{titreBloc}", name="showListError")
+     * @param $idBloc
+     * @param $titreBloc
+     * @return Response
+     */
+    public function showListError ($idBloc, $titreBloc): Response
+    {
+        $listErrors = $this->apiGetErreurService();
+        if ($listErrors) {
+            $listErrors = json_decode($listErrors)->data;
+            return $this->render('components/_selectErreurService.html.twig', ['list' => $listErrors, 'id' => $idBloc,'titre' => $titreBloc]);
+        }
+        else
+            return new Response("Erreur dans la réponse", Response::HTTP_NOT_FOUND);
     }
 }

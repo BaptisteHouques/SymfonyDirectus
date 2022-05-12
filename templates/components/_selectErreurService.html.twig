@@ -1,0 +1,26 @@
+<div class="loading-overlay">
+    <div class="inner">
+        <h3 class="">Sélectionner une erreur</h3>
+        <p class="text-center">({{ titre }})</p>
+        <form id="errorForm" method="post">
+            {% for element in list %}
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="valueSelected" id="" value="{{ element.id }}">
+                    <label class="form-check-label" for="flexRadioDefault1">
+                        {{ element.Titre_Erreur }}
+                    </label>
+                </div>
+            {% endfor %}
+            <div class="text-center mt-3">
+                <button class="btn v-error" type="submit" onclick="return postError({{ id }},{{ list|json_encode }})">Valider</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{#
+    Variables to be filled in:
+    id,
+    list,
+    titre
+#}

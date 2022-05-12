@@ -21,54 +21,84 @@
 {% endblock %}
 {% block javascripts %}
     <script>
-        {# Fonction appelée lors du clique sur le boutton d'un bloc ayant une relation avec le model Erreur_Service
-        lui retirant cette relation  #}
-        function removeError(id){
-            let url = '{{ path('removeBlocError', { 'idBloc': 'fakeId'}) }}'
-            url = url.replace('fakeId', id);
-            let response;
+        let listError = [];
+        // Fonction appelée lors du clique sur le boutton d'un bloc d'information ayant une relation avec le model Erreur_Service de l'API Directus.
+        // L'exécution de la fonction lui retire cette relation et modifie la card du bloc en conséquence
+        function removeError (idBloc) {
+            //Définition de l'url du controller en passant l'id du bloc correspondant
+            let url = '{{ path('updateBlocError', { 'idBloc': 'fakeId'}) }}'
+            url = url.replace('fakeId', idBloc);
+
+            //Initialisation d'un object XHR pour une requête AJAX
             let xhr = new XMLHttpRequest();
-
             xhr.open('GET', url, true);
-
             xhr.onload = function () {
-                response = JSON.parse(this.response)
-                console.log(response)
-
-                {# Chercher un moyen d'utiliser la supression et l'ajout des composants existants
-                document.getElementById('bloc-'+id).remove();
-
-                let referenceNode = document.getElementById('bloc-6')
-                //referenceNode.insertAdjacentHTML('beforebegin', component)
-
-                referenceNode.parentNode.insertBefore(
-                        {% include 'components/_cards.blocInformation.error.html.twig'
-                            with {'id': 'id', 'titre': 'titre', 'errorType': 'errortype', 'errorDesc': 'errordesc', 'image': 'https://www.projetcartylion.fr/app/uploads/2020/08/Placeholder.png'}
-                        %},referenceNode.nextSibling)
-                #}
-
-                // Suppression des éléments affichants l'erreur
-                document.getElementById('bloc-'+id).getElementsByClassName('description-error')[0].remove()
-                document.getElementById('bloc-'+id).getElementsByClassName('type-error')[0].remove()
-
-                // Création d'un élément affichant la description du bloc
-                let p = document.createElement('p')
-                let pValue = document.createTextNode(response.Description);
-                p.appendChild(pValue)
-                p.className = "pt-2"
-
-                // Insertion de l'élément créé aprés l'élément affichant le titre du bloc
-                let referenceNode = document.getElementsByClassName('card-title')[0]
-                referenceNode.parentNode.insertBefore(p, referenceNode.nextSibling)
-
-                let button = document.getElementById('bloc-'+id).getElementsByClassName('btn')[0]
-                button.classList.remove('btn-outline-success')
-                button.classList.add('btn-outline-danger')
-                button.innerHTML = 'Rendre Inaccessible'
-                button.removeAttribute('onclick')
+                //Insertion et remplacement de l'ancien composant card du bloc (_cards.blocInformation.error) par un nouveau (_cards.blocInformation)
+                document.getElementById('bloc-'+idBloc).outerHTML = this.response;
             }
-
             xhr.send();
         }
+
+        //Fonction appelée lors du clique sur le boutton d'un bloc d'information N'ayant PAS de relation avec le model Erreur_Service de l'API Directus.
+        // L'exécution de la fonction affiche un formulaire permettant la sélection d'une erreur à lier à ce bloc d'information
+        function selectErreurService (idBloc, titreBloc) {
+            //Définition de l'url du controller en passant l'id et le titre du bloc correspondant
+            let url = '{{ path('showListError', {'idBloc':'fakeId','titreBloc':'fakeTitre'}) }}'
+            url = url.replace('fakeId', idBloc)
+            url = url.replace('fakeTitre', titreBloc)
+
+            //Initialisation d'un object XHR pour une requête AJAX
+            let xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.onload = function () {
+                //Insertion du composant formulaire d'affichage des erreurs disponibles (_selectErreurService)
+                let parentDiv = document.getElementsByClassName('container')[0];
+                parentDiv.insertAdjacentHTML("beforebegin", this.response)
+            }
+            xhr.send();
+        }
+
+        //Fonction appelée lors de la validation du formulaire d'affichage des erreurs disponibles.
+        //L'exécution de la fonction ajoute une relation au bloc d'information correspondant avec l'erreur sélectionnée par l'utilisateur
+        //et modifie la card du bloc en conséquence
+        function postError (idBloc, list) {
+            //Récupération des valeurs (ici une seule) du formulaire d'affichage des erreurs grâce à l'object FormData
+            let form = document.getElementById('errorForm')
+            let value = new FormData(form)
+            value = value.get('valueSelected')
+
+            //Blocage de l'évènement submit du formulaire (afin d'empêcher le raffraîchissement de la page)
+            function handleForm(event) {event.preventDefault();}
+            form.addEventListener('submit', handleForm)
+
+            //Définition de l'url du controller en passant l'id du bloc correspondant
+            let url = '{{ path('updateBlocError', { 'idBloc': 'fakeId'}) }}'
+            url = url.replace('fakeId', idBloc)
+
+            //Initialisation d'un object XHR pour une requête AJAX
+            let xhr = new XMLHttpRequest();
+            xhr.open('POST', url, true);
+            xhr.onload = function () {
+                //Suppression de l'élément formulaire d'affichage des erreurs disponibles
+                document.getElementsByClassName('loading-overlay')[0].remove();
+                //Remplacement de l'ancien composant card du bloc (_cards.blocInformation) par un nouveau (_cards.blocInformation.error)
+                // avec des valeurs temporaires
+                document.getElementById('bloc-'+idBloc).outerHTML = this.response;
+
+                //Récupération des informations de l'erreur à afficher dans la card en cherchant dans la liste des erreurs disponibles
+                // celle correspondant à la valeur (étant l'id) de l'erreur précédement sélectionnée par l'utilisateur
+                value = parseInt(value)
+                let erreur = list.find(x => x.id === value);
+
+                //Remplacement des valeurs temporaires par les vrais
+                document.getElementById('bloc-'+idBloc).getElementsByClassName('type-error')[0].innerText = erreur.CodeJSON_Erreur.Type
+                document.getElementById('bloc-'+idBloc).getElementsByClassName('desc-error')[0].innerText = erreur.CodeJSON_Erreur.Description
+            }
+
+            //Définition d'un header pour l'object XHR
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.send("valueSelected="+value);
+        }
+
     </script>
 {% endblock %}

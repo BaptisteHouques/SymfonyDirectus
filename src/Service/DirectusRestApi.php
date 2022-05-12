@@ -19,7 +19,7 @@ class DirectusRestApi
         $this->logger = $logger;
     }
 
-    public function getDirectusApi(string $url, string $method = 'GET', string $body = null, array $headers = []) {
+    public function callDirectusApi(string $url, string $method = 'GET', string $body = null, array $headers = null) {
         if ($headers == null)
             $headers = array();
         try {
@@ -28,53 +28,11 @@ class DirectusRestApi
                 'body' => $body
             ]);
             $res = $httpresponse->getContent();
-            $res = json_decode($res);
-            return $res->data;
+            return $res;
         } catch (ClientExceptionInterface | RedirectionExceptionInterface | ServerExceptionInterface | TransportExceptionInterface $e) {
             $this->logger->critical('Impossible d\'appeler l\'API ' . $url . " : " . $e);
         }
         return false;
     }
 
-    public function removeRelation (string $url, $body = null, array $headers = null) {
-        if ($headers == null)
-            $headers = array();
-        $body = json_encode($body);
-        $headers = ["Authorization" => "Bearer t", "Content-Type" => "application/json"];
-        try {
-            $httpresponse = $this->httpClient->request('PATCH', $url,[
-                'headers' => $headers,
-                'body' => $body
-            ]);
-            $res = $httpresponse->getContent();
-            $res = json_decode($res);
-            return $res->data;
-        } catch (ClientExceptionInterface | RedirectionExceptionInterface | ServerExceptionInterface | TransportExceptionInterface $e) {
-            $this->logger->critical('Impossible d\'appeler l\'API ' . $url . " : " . $e);
-        }
-        return false;
-    }
-
-    public function directusGraphQL(string $url, string $query, string $method = 'POST', string $body = null, array $headers = []) {
-        if ($headers == null)
-            $headers = array();
-        try {
-            $data = array('query' => $query);
-            $data = json_encode($data);
-            $headers = ['Content-Type' => 'application/json'];
-
-            $httpresponse = $this->httpClient->request($method, $url, [
-                'headers' => $headers,
-                'body' => $data
-            ]);
-            $res = $httpresponse->getContent();
-
-            $result = json_decode($res);
-            return $result->data->bloc_information;
-
-        } catch (ClientExceptionInterface | RedirectionExceptionInterface | ServerExceptionInterface | TransportExceptionInterface $e) {
-            $this->logger->critical('Impossible d\'appeler l\'API ' . $url . " : " . $e);
-        }
-        return false;
-    }
 }

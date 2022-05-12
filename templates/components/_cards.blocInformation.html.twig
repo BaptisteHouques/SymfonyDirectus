@@ -3,7 +3,7 @@
     <div class="card-body text-center d-flex flex-column">
         <h5 class="card-title">{{ titre }}</h5>
         <p class="description card-text pt-2">{{ desc }}</p>
-        <button class="btn btn-outline-danger mt-auto">Rendre Inaccessible</button>
+        <button class="btn btn-outline-danger mt-auto" onclick="selectErreurService({{ id }}, '{{ titre }}')">Rendre Inaccessible</button>
     </div>
 </div>
 

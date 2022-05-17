@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Service\DirectusRestApi;
+use App\Service\DirectusApiRest;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,10 +11,10 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class BlocController extends AbstractController
 {
-    private DirectusRestApi $directusRestApi;
+    private DirectusApiRest $directusApiRest;
 
-    public function __construct(DirectusRestApi $directusRestApi) {
-        $this->directusRestApi = $directusRestApi;
+    public function __construct(DirectusApiRest $directusRestApi) {
+        $this->directusApiRest = $directusRestApi;
     }
 
     /**
@@ -26,8 +26,8 @@ class BlocController extends AbstractController
         $urlGetBloc = $_ENV['DIRECTUS_API'] . '/items/bloc_information?fields=*,Erreur_Bloc.*';
         $urlGetBanniere = $_ENV['DIRECTUS_API'] . '/items/banniere';
 
-        $bloc_informations = $this->directusRestApi->callDirectusApi($urlGetBloc);
-        $banniere = $this->directusRestApi->callDirectusApi($urlGetBanniere);
+        $bloc_informations = $this->directusApiRest->callDirectusApi($urlGetBloc);
+        $banniere = $this->directusApiRest->callDirectusApi($urlGetBanniere);
 
         if($bloc_informations && $banniere)
             return $this->render('blocInformationView.html.twig', ['bloc_informations' => json_decode($bloc_informations)->data, 'banniere' => $banniere,'directus_api' => $_ENV['DIRECTUS_API']]);
@@ -49,7 +49,7 @@ class BlocController extends AbstractController
         $body = json_encode(["Erreur_Bloc" => $errorBloc]);
         $headers = ["Authorization" => "Bearer $token", "Content-Type" => "application/json"];
 
-        $response = $this->directusRestApi->callDirectusApi($url, 'PATCH', $body, $headers);
+        $response = $this->directusApiRest->callDirectusApi($url, 'PATCH', $body, $headers);
 
         if ($response)
             return $response;
@@ -64,7 +64,7 @@ class BlocController extends AbstractController
     public function apiGetErreurService ()
     {
         $url = $_ENV['DIRECTUS_API'] . '/items/erreur_service/';
-        $response = $this->directusRestApi->callDirectusApi($url);
+        $response = $this->directusApiRest->callDirectusApi($url);
         if ($response)
             return $response;
         else

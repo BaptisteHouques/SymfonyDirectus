@@ -9,7 +9,7 @@ use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-class DirectusRestApi
+class DirectusApiRest
 {
     private LoggerInterface $logger;
     private HttpClientInterface $httpClient;
@@ -27,8 +27,7 @@ class DirectusRestApi
                 'headers' => $headers,
                 'body' => $body
             ]);
-            $res = $httpresponse->getContent();
-            return $res;
+            return $httpresponse->getContent();
         } catch (ClientExceptionInterface | RedirectionExceptionInterface | ServerExceptionInterface | TransportExceptionInterface $e) {
             $this->logger->critical('Impossible d\'appeler l\'API ' . $url . " : " . $e);
         }

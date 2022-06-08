@@ -65,11 +65,12 @@
             //Récupération des valeurs (ici une seule) du formulaire d'affichage des erreurs grâce à l'object FormData
             let form = document.getElementById('errorForm')
             let value = new FormData(form)
-            value = value.get('valueSelected')
-
-            //Blocage de l'évènement submit du formulaire (afin d'empêcher le raffraîchissement de la page)
             function handleForm(event) {event.preventDefault();}
             form.addEventListener('submit', handleForm)
+            value = value.get('valueSelected')
+            if (value === null)
+                return;
+            //Blocage de l'évènement submit du formulaire (afin d'empêcher le raffraîchissement de la page)
 
             //Définition de l'url du controller en passant l'id du bloc correspondant
             let url = '{{ path('updateBlocError', { 'idBloc': 'fakeId'}) }}'

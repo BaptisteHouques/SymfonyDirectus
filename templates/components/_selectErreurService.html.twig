@@ -5,14 +5,14 @@
         <form id="errorForm" method="post">
             {% for element in list %}
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="valueSelected" id="" value="{{ element.id }}">
+                    <input class="form-check-input" type="radio" name="valueSelected" id="" required value="{{ element.id }}">
                     <label class="form-check-label" for="flexRadioDefault1">
                         {{ element.Titre_Erreur }}
                     </label>
                 </div>
             {% endfor %}
             <div class="text-center mt-3">
-                <button class="btn v-error" type="submit" onclick="return postError({{ id }},{{ list|json_encode }})">Valider</button>
+                <button class="btn v-error" type="submit" onclick="postError({{ id }},{{ list|json_encode }})">Valider</button>
             </div>
         </form>
     </div>
